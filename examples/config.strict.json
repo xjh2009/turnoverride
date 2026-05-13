@@ -1,0 +1,52 @@
+{
+  "_doc_help": "Strict-JSON example. The mod ignores any field starting with '_'. Use this variant if your editor refuses // comments.",
+  "_doc_path": "Place this file at: <game_dir>/config/turnoverride/config.json",
+
+  "_doc_enabled": "Master switch. false = mod loaded but does nothing.",
+  "enabled": true,
+
+  "_doc_debugLog": "Print every override decision to the Minecraft log. Lines start with '[TurnOverride]'.",
+  "debugLog": true,
+
+  "_doc_mergeMode": "REPLACE = only yours | PREPEND = yours + Mojang fallback | APPEND = Mojang first + yours fallback",
+  "mergeMode": "PREPEND",
+
+  "_doc_forceRelay": "true = no hole punching, always tunnel through TURN (RTCIceTransportPolicy.RELAY). Higher latency, but bypasses every NAT.",
+  "forceRelay": false,
+
+  "_doc_staticServers": "One array entry == one set of credentials. The 'urls' inside one entry == same credentials, different transports/ports of the SAME server.",
+  "staticServers": [
+    {
+      "_doc": "Entry A: home TURN, three transports, shared creds alice/s3cret",
+      "username": "alice",
+      "password": "s3cret",
+      "urls": [
+        "turn:turn.example.com:3478?transport=udp",
+        "turn:turn.example.com:3478?transport=tcp",
+        "turns:turn.example.com:5349?transport=tcp"
+      ]
+    },
+    {
+      "_doc": "Entry B: cloud backup, different creds bob@cloud/hunter2",
+      "username": "bob@cloud",
+      "password": "hunter2",
+      "urls": [
+        "turn:backup.example.net:3478?transport=udp"
+      ]
+    }
+  ],
+
+  "_doc_remote": "Empty url = disabled. When enabled, fetched on EVERY TURN auth request. Auto-detects Mojang-native or browser-style RTCIceServer-array JSON.",
+  "remote": {
+    "_doc_url": "GET endpoint, empty = off",
+    "url": "",
+
+    "_doc_headers": "Arbitrary HTTP headers, e.g. Authorization: Bearer ...",
+    "headers": {
+      "User-Agent": "turnoverride/1.0"
+    },
+
+    "_doc_timeoutMillis": "Request timeout in ms. Falls back to Mojang on timeout.",
+    "timeoutMillis": 5000
+  }
+}

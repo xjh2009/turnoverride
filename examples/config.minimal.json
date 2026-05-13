@@ -1,0 +1,21 @@
+// Minimal "I have one TURN server, replace Mojang's" config.
+// Copy to: <game_dir>/config/turnoverride/config.json
+{
+  "enabled": true,
+  "debugLog": false,
+  "mergeMode": "REPLACE",
+  "forceRelay": false,
+
+  "staticServers": [
+    {
+      "username": "yourUser",
+      "password": "yourPass",
+      "urls": [
+        "turn:turn.example.com:3478?transport=udp",
+        "turn:turn.example.com:3478?transport=tcp"
+      ]
+    }
+  ],
+
+  "remote": { "url": "", "headers": {}, "timeoutMillis": 5000 }
+}

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.xjhya.turnoverride.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "RtcHandshakeHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

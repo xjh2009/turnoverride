@@ -1,0 +1,156 @@
+// =============================================================================
+//  TurnOverride config — full example with inline comments
+//
+//  Path:  <game_dir>/config/turnoverride/config.json
+//
+//  This file accepts // and /* ... */ comments (the mod reads JSON in
+//  "lenient" mode). Trailing commas are NOT allowed though.
+//
+//  If your editor complains about the comments, see config.strict.json for
+//  a pure-JSON variant that uses "_comment" fields instead.
+// =============================================================================
+{
+
+  // -----------------------------------------------------------------
+  //  Master switch. false = the mod is loaded but does nothing.
+  // -----------------------------------------------------------------
+  "enabled": true,
+
+  // -----------------------------------------------------------------
+  //  When true, prints what the mod does on every handshake to the
+  //  Minecraft log. Useful while you're tuning things; can be turned off
+  //  once it's stable. Look for lines starting with "[TurnOverride]".
+  // -----------------------------------------------------------------
+  "debugLog": true,
+
+  // -----------------------------------------------------------------
+  //  How your custom servers interact with Mojang's default TURN.
+  //
+  //    "REPLACE"  - drop Mojang's TURN entirely, use only yours.
+  //                 Best when your TURN setup is rock solid.
+  //
+  //    "PREPEND"  - your servers come first, Mojang's appended as fallback.
+  //                 Best when your TURN is faster/cheaper but you want a
+  //                 safety net.
+  //
+  //    "APPEND"   - Mojang's servers first, yours appended as fallback.
+  //                 Best when you only want to *add* relays, not change
+  //                 the default behaviour.
+  //
+  //  Each server keeps its OWN username/password (since v1.0 they're
+  //  injected as independent RTCIceServer entries — no credential mixing).
+  // -----------------------------------------------------------------
+  "mergeMode": "PREPEND",
+
+  // -----------------------------------------------------------------
+  //  forceRelay = true → disable hole-punching, ALL traffic goes through
+  //                      a TURN server (RTCIceTransportPolicy.RELAY).
+  //
+  //  Use this if:
+  //   - you're behind symmetric NAT / strict firewall and direct P2P
+  //     never works for you,
+  //   - you want privacy: your real IP is never exposed to the other peer,
+  //   - you're forcing a particular routing path for testing.
+  //
+  //  Trade-off: higher latency (one extra hop) and all game traffic
+  //  consumes your TURN server bandwidth. Leave it false if direct P2P
+  //  works fine for you.
+  // -----------------------------------------------------------------
+  "forceRelay": false,
+
+  // -----------------------------------------------------------------
+  //  staticServers — TURN/STUN servers hard-coded in this file.
+  //
+  //  RULE OF THUMB:
+  //    one entry = one set of credentials.
+  //    one entry's "urls" array = same credentials, multiple ways to
+  //    reach the same server (different transports / different ports).
+  //
+  //  Example interpretation:
+  //    Entry A below is one TURN server reached via UDP, TCP, and TLS,
+  //    all sharing the username/password "alice / s3cret".
+  //
+  //    Entry B is a totally separate TURN server with its own creds
+  //    "bob@cloud / hunter2".
+  //
+  //    WebRTC will get a "relay candidate" from BOTH (if reachable)
+  //    and use whichever connects first.
+  // -----------------------------------------------------------------
+  "staticServers": [
+
+    // ----- Entry A: a single TURN server, multiple transports ---------
+    {
+      "username": "alice",
+      "password": "s3cret",
+      "urls": [
+        // UDP is preferred (lowest latency); try it first.
+        "turn:turn.example.com:3478?transport=udp",
+
+        // TCP fallback for networks that block UDP.
+        "turn:turn.example.com:3478?transport=tcp",
+
+        // TLS fallback for networks that intercept plain TURN.
+        "turns:turn.example.com:5349?transport=tcp"
+      ]
+    },
+
+    // ----- Entry B: a different TURN server, different credentials ----
+    {
+      "username": "bob@cloud",
+      "password": "hunter2",
+      "urls": [
+        "turn:backup.example.net:3478?transport=udp"
+      ]
+    }
+
+    // ----- (You can keep going — each entry independent.)
+  ],
+
+  // -----------------------------------------------------------------
+  //  Remote source — fetched fresh on every TURN auth request.
+  //
+  //  Leave "url" empty to disable.
+  //
+  //  When enabled, the mod GETs this URL every time Minecraft asks for
+  //  TURN credentials and merges the result with staticServers above.
+  //
+  //  If the request fails (timeout, non-2xx, bad JSON) the mod falls back
+  //  to Mojang's default TURN for that one handshake; next handshake will
+  //  retry.
+  //
+  //  Accepts TWO response shapes (auto-detected):
+  //
+  //    Shape 1 — Mojang-native (passes straight through their codec):
+  //      {
+  //        "ExpirationInSeconds": 3600,
+  //        "TurnAuthServers": [
+  //          { "Username": "u", "Password": "p",
+  //            "Urls": ["turn:host:3478?transport=udp"] }
+  //        ]
+  //      }
+  //
+  //    Shape 2 — Browser-style RTCIceServer array:
+  //      [
+  //        { "urls": ["turn:host:3478?transport=udp"],
+  //          "username": "u", "credential": "p" }
+  //      ]
+  //      ("credential" and "password" are both accepted.)
+  // -----------------------------------------------------------------
+  "remote": {
+
+    // The HTTP(S) endpoint to GET. Empty string = remote fetching disabled.
+    "url": "",
+
+    // Arbitrary request headers. Common uses:
+    //   "Authorization": "Bearer <token>"  for protected endpoints
+    //   "X-API-Key":     "<key>"
+    //   "User-Agent":    "turnoverride/1.0"
+    "headers": {
+      "User-Agent": "turnoverride/1.0"
+    },
+
+    // How long to wait for the remote endpoint before giving up
+    // (in milliseconds). Falls back to Mojang on timeout.
+    "timeoutMillis": 5000
+  }
+}

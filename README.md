@@ -34,10 +34,25 @@ remote URL every request" requirement.
 ## Build
 
 ```powershell
-gradlew build
+.\gradlew.bat build
 ```
 
 Drop `build/libs/turnoverride-<version>.jar` into your Fabric `mods/` folder.
+
+## CI / CD
+
+GitHub Actions is configured in [.github/workflows/ci-release.yml](.github/workflows/ci-release.yml).
+
+- Every push to `main` and every pull request runs a full build.
+- Pushing a tag that starts with `v` (for example `v1.0.0`) builds the mod, creates a GitHub Release, and uploads both jars from `build/libs/`.
+- Keep `mod_version` in `gradle.properties` aligned with the release tag you push.
+
+Example release flow:
+
+```powershell
+git tag v1.0.1
+git push origin v1.0.1
+```
 
 Notes on mappings: the included `build.gradle` uses **official Mojang mappings**
 because the 26.2 snapshot didn't yet have a Yarn release at the time of
